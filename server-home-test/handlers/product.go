@@ -58,7 +58,7 @@ func (h *handlerProduct) AddProduct(c *gin.Context) {
 	price, _ := strconv.Atoi(c.PostForm("price"))
 	qty, _ := strconv.Atoi(c.PostForm("qty"))
 
-	request := productsdto.ProductRequest{
+	request := productsdto.UpdateProductRequest{
 		Name:        c.PostForm("name"),
 		Description: c.PostForm("description"),
 		Price:       price,
@@ -90,4 +90,64 @@ func (h *handlerProduct) AddProduct(c *gin.Context) {
 	product, _ = h.ProductRepository.GetProduct(int(product.ID))
 
 	c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: product})
+}
+
+func (h *handlerProduct) UpdateProduct(c *gin.Context) {
+	var err error
+	dataFile := c.GetString("dataFile")
+
+	price, _ := strconv.Atoi(c.PostForm("price"))
+	qty, _ := strconv.Atoi(c.PostForm("qty"))
+
+	request := productsdto.UpdateProductRequest{
+		Name:        c.PostForm("name"),
+		Description: c.PostForm("description"),
+		Price:       price,
+		Image:       dataFile,
+		Qty:         qty,
+	}
+
+	validation := validator.New()
+	err = validation.Struct(request)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
+		return
+	}
+
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	product, err := h.ProductRepository.GetProduct(id)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+		return
+	}
+
+	if request.Name != "" {
+		product.Name = request.Name
+	}
+
+	if request.Description != "" {
+		product.Description = request.Description
+	}
+
+	if request.Price != 0 {
+		product.Price = request.Price
+	}
+
+	if request.Image != "" {
+		product.Image = request.Image
+	}
+
+	if request.Qty != 0 {
+		product.Qty = request.Qty
+	}
+
+	data, err := h.ProductRepository.UpdateProduct(product)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: data})
 }

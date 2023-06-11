@@ -8,3 +8,10 @@ type ProductRequest struct {
 	Image       string `json:"image" form:"image" validate:"required"`
 }
 
+type UpdateProductRequest struct {
+	Name        string `json:"name" form:"name"`
+	Description string `json:"description" form:"description"`
+	Price       int    `json:"price" form:"price"`
+	Qty         int    `json:"qty" form:"qty"`
+	Image       string `json:"image" form:"image"`
+}
