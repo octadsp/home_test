@@ -36,6 +36,21 @@ func (h *handlerProduct) FindProducts(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: products})
 }
 
+func (h *handlerProduct) GetProduct(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	var product models.Product
+	product, err := h.ProductRepository.GetProduct(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+		return
+	}
+
+	product.Image = path_file + product.Image
+
+	c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: product})
+}
+
 func (h *handlerProduct) AddProduct(c *gin.Context) {
 	var err error
 	dataFile := c.GetString("dataFile")
