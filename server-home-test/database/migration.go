@@ -10,6 +10,7 @@ import (
 func RunMigration() {
 	err := connectiondb.DB.AutoMigrate(
 		&models.User{},
+		&models.Product{},
 	)
 
 	if err != nil {
