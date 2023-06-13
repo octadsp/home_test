@@ -11,5 +11,5 @@ func UserRoutes(r *gin.RouterGroup) {
 	userRepository := repositories.RepositoryUser(connectiondb.DB)
 	h := handlers.HandlerUser(userRepository)
 
-	r.GET("/users", h.FindUsers())
+	r.GET("/users", h.FindUsers)
 }

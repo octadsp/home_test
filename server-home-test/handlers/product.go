@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator"
+	"github.com/golang-jwt/jwt/v4"
 	productsdto "github.com/octadsp/server-home-test/dto/product"
 	dto "github.com/octadsp/server-home-test/dto/result"
 	"github.com/octadsp/server-home-test/models"
@@ -18,8 +19,8 @@ type handlerProduct struct {
 	ProductRepository repositories.ProductRepository
 }
 
-func HandlerProduct(ProductRepository repositories.ProductRepository) *handlerProduct {
-	return &handlerProduct{ProductRepository}
+func HandlerProduct(productRepository repositories.ProductRepository) *handlerProduct {
+	return &handlerProduct{productRepository}
 }
 
 func (h *handlerProduct) FindProducts(c *gin.Context) {
@@ -33,7 +34,7 @@ func (h *handlerProduct) FindProducts(c *gin.Context) {
 		products[i].Image = path_file + p.Image
 	}
 
-	c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: products})
+	c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: convertFindProductsResponse(products)})
 }
 
 func (h *handlerProduct) GetProduct(c *gin.Context) {
@@ -48,7 +49,7 @@ func (h *handlerProduct) GetProduct(c *gin.Context) {
 
 	product.Image = path_file + product.Image
 
-	c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: product})
+	c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: convertGetProductResponse(product)})
 }
 
 func (h *handlerProduct) AddProduct(c *gin.Context) {
@@ -58,7 +59,7 @@ func (h *handlerProduct) AddProduct(c *gin.Context) {
 	price, _ := strconv.Atoi(c.PostForm("price"))
 	qty, _ := strconv.Atoi(c.PostForm("qty"))
 
-	request := productsdto.UpdateProductRequest{
+	request := productsdto.ProductRequest{
 		Name:        c.PostForm("name"),
 		Description: c.PostForm("description"),
 		Price:       price,
@@ -73,12 +74,16 @@ func (h *handlerProduct) AddProduct(c *gin.Context) {
 		return
 	}
 
+	userLogin, _ := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(float64)
+
 	product := models.Product{
 		Name:        request.Name,
 		Description: request.Description,
 		Price:       request.Price,
 		Qty:         request.Qty,
 		Image:       request.Image,
+		UserID:      uint(userId),
 	}
 
 	product, err = h.ProductRepository.AddProduct(product)
@@ -89,7 +94,7 @@ func (h *handlerProduct) AddProduct(c *gin.Context) {
 
 	product, _ = h.ProductRepository.GetProduct(int(product.ID))
 
-	c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: product})
+	c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: convertAddProductResponse(product)})
 }
 
 func (h *handlerProduct) UpdateProduct(c *gin.Context) {
@@ -168,4 +173,51 @@ func (h *handlerProduct) DeleteProduct(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: data})
+}
+
+func convertFindProductsResponse(products []models.Product) []productsdto.FindProductsResponse {
+	responses := make([]productsdto.FindProductsResponse, len(products))
+	for i, u := range products {
+
+		responses[i] = productsdto.FindProductsResponse{
+			ID:          u.ID,
+			Name:        u.Name,
+			Description: u.Description,
+			Price:       u.Price,
+			Qty:         u.Qty,
+			Image:       u.Image,
+			UserID:      u.UserID,
+		}
+	}
+	return responses
+}
+
+func convertGetProductResponse(product models.Product) productsdto.GetProductResponse {
+
+	response := productsdto.GetProductResponse{
+		ID:          product.ID,
+		Name:        product.Name,
+		Description: product.Description,
+		Price:       product.Price,
+		Qty:         product.Qty,
+		Image:       product.Image,
+		UserID:      product.UserID,
+	}
+
+	return response
+}
+
+func convertAddProductResponse(product models.Product) productsdto.AddProductResponse {
+
+	response := productsdto.AddProductResponse{
+		ID:          product.ID,
+		Name:        product.Name,
+		Description: product.Description,
+		Price:       product.Price,
+		Qty:         product.Qty,
+		Image:       product.Image,
+		UserID:      product.UserID,
+	}
+
+	return response
 }

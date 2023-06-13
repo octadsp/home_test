@@ -14,7 +14,7 @@ func ProductRoutes(r *gin.RouterGroup) {
 
 	r.GET("/products", h.FindProducts)
 	r.GET("/product/:id", h.GetProduct)
-	r.POST("/product", middleware.UploadFile, h.AddProduct)
+	r.POST("/product", middleware.Auth, middleware.UploadFile, h.AddProduct)
 	r.PATCH("/product/:id", middleware.UploadFile, h.UpdateProduct)
 	r.DELETE("/product/:id", h.DeleteProduct)
 }

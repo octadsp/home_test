@@ -11,6 +11,7 @@ func RunMigration() {
 	err := connectiondb.DB.AutoMigrate(
 		&models.User{},
 		&models.Product{},
+		&models.Transaction{},
 	)
 
 	if err != nil {

@@ -6,4 +6,5 @@ func RouteInit(g *gin.RouterGroup) {
 	UserRoutes(g)
 	AuthenticationRoutes(g)
 	ProductRoutes(g)
+	TransactionRoutes(g)
 }

@@ -11,6 +11,6 @@ func AuthenticationRoutes(r *gin.RouterGroup) {
 	authenticationRepository := repositories.RepositoryAuthentication(connectiondb.DB)
 	h := handlers.HandlerAuthentication(authenticationRepository)
 
-	r.POST("/register", h.Register())
-	r.POST("/login", h.Login())
+	r.POST("/register", h.Register)
+	r.POST("/login", h.Login)
 }
